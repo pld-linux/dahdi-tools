@@ -1,0 +1,83 @@
+#!/bin/sh
+#
+# dahdi	dahdi modules
+#
+# chkconfig:	345 85 15
+# description:	DAHDI is a series of telephony interface devices often \
+#   used with Asterisk
+#
+
+# Source function library
+. /etc/rc.d/init.d/functions
+
+# Get service config
+[ -f /etc/sysconfig/dahdi ] && . /etc/sysconfig/dahdi
+
+start() {
+	# Check if the service is already running?
+	if [ ! -f /var/lock/subsys/dahdi ]; then
+		msg_starting dahdi
+		busy
+		for mod in $ZAP_MODULES; do
+			modprobe $mod
+		done
+		sleep 2
+		/sbin/ztcfg
+		RETVAL=$?
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/dahdi
+		ok
+	else
+		msg_already_running dahdi
+	fi
+}
+
+stop() {
+	# Stop daemons.
+	if [ -f /var/lock/subsys/dahdi ]; then
+		msg_stopping dahdi
+		busy
+		for mod in $ZAP_MODULES; do
+			if test x$mod != xdahdi; then
+				rmmod $mod
+			fi
+		done
+		rmmod dahdi
+		rm -f /var/lock/subsys/dahdi >/dev/null 2>&1
+		ok
+	else
+		msg_not_running dahdi
+	fi
+}
+
+RETVAL=0
+# See how we were called.
+case "$1" in
+  start)
+  	start
+	;;
+  stop)
+  	stop
+	;;
+  status)
+	RETVAL=0
+	;;
+  restart)
+  	stop
+	start
+	;;
+  reload|force-reload|graceful)
+	if [ -f /var/lock/subsys/dahdi ]; then
+		/sbin/ztcfg
+		RETVAL=$?
+	else
+		msg_not_running dahdi
+		RETVAL=7
+	fi
+	;;
+  *)
+	msg_usage "$0 {start|stop|restart|reload|force-reload|graceful|status}"
+	exit 3
+	;;
+esac
+
+exit $RETVAL
