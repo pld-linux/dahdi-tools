@@ -49,6 +49,16 @@ stop() {
 	fi
 }
 
+condrestart() {
+	if [ -f /var/lock/subsys/dahdi ]; then
+		stop
+		start
+	else
+		msg_not_running dahdi
+		RETVAL=$1
+	fi
+}
+
 RETVAL=0
 # See how we were called.
 case "$1" in
@@ -58,12 +68,12 @@ case "$1" in
   stop)
   	stop
 	;;
-  status)
-	RETVAL=0
-	;;
   restart)
   	stop
 	start
+	;;
+  try-restart)
+	condrestart 0
 	;;
   reload|force-reload|graceful)
 	if [ -f /var/lock/subsys/dahdi ]; then
@@ -74,8 +84,11 @@ case "$1" in
 		RETVAL=7
 	fi
 	;;
+  status)
+	RETVAL=0
+	;;
   *)
-	msg_usage "$0 {start|stop|restart|reload|force-reload|graceful|status}"
+	msg_usage "$0 {start|stop|restart|try-restart|reload|force-reload|graceful|status}"
 	exit 3
 	;;
 esac
