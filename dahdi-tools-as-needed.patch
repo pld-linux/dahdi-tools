@@ -1,0 +1,12 @@
+diff -Nur dahdi-tools-2.1.0.2.orig/Makefile dahdi-tools-2.1.0.2.as-needed/Makefile
+--- dahdi-tools-2.1.0.2.orig/Makefile	2008-12-15 13:19:07.000000000 -0700
++++ dahdi-tools-2.1.0.2.as-needed/Makefile	2008-12-25 23:22:02.000000000 -0700
+@@ -156,7 +156,7 @@
+ 	$(CC) $(CFLAGS) $(MAKE_DEPS) -c -o $@ $<
+ 
+ %: %.o
+-	$(CC) $(LDFLAGS) -o $@ $^
++	$(CC) -o $@ $^ $(LDFLAGS) 
+ 
+ prereq: config.status
+ 
