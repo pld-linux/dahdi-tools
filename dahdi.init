@@ -22,7 +22,7 @@ start() {
 			modprobe $mod
 		done
 		sleep 2
-		/sbin/ztcfg
+		/usr/sbin/dahdi_cfg
 		RETVAL=$?
 		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/dahdi
 		ok
@@ -77,7 +77,7 @@ case "$1" in
 	;;
   reload|force-reload|graceful)
 	if [ -f /var/lock/subsys/dahdi ]; then
-		/sbin/ztcfg
+		/usr/sbin/dahdi_cfg
 		RETVAL=$?
 	else
 		msg_not_running dahdi
