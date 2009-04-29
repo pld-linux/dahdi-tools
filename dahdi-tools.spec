@@ -34,6 +34,7 @@ Source2:	dahdi.sysconfig
 Patch0:		%{name}-as-needed.patch
 URL:		http://www.asterisk.org/
 Obsoletes:	zaptel
+BuildRequires:	dahdi-linux-devel
 BuildRequires:	newt-devel
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
@@ -140,7 +141,9 @@ chmod a+rx download-logger
 
 %build
 %configure
-%{__make}
+%{__make} \
+	CC="%{__cc}" \
+	OPTFLAGS="%{rpmcppflags} %{rpmcflags}"
 
 %install
 rm -rf $RPM_BUILD_ROOT
