@@ -1,10 +1,28 @@
 #
 # TODO:
-# - should more header files be installed?
-# - Installed (but unpackaged) file(s) found:
-#   /etc/hotplug/usb/xpp_fxloader
-#   /etc/hotplug/usb/xpp_fxloader.usermap
-#   /etc/udev/rules.d/xpp.rules
+# warning: Installed (but unpackaged) file(s) found:
+#    /etc/hotplug/usb/xpp_fxloader
+#    /etc/hotplug/usb/xpp_fxloader.usermap
+#    /usr/local/share/perl5/Dahdi.pm
+#    /usr/local/share/perl5/Dahdi/Chans.pm
+#    /usr/local/share/perl5/Dahdi/Config/Gen.pm
+#    /usr/local/share/perl5/Dahdi/Config/Gen/Chandahdi.pm
+#    /usr/local/share/perl5/Dahdi/Config/Gen/Modules.pm
+#    /usr/local/share/perl5/Dahdi/Config/Gen/System.pm
+#    /usr/local/share/perl5/Dahdi/Config/Gen/Unicall.pm
+#    /usr/local/share/perl5/Dahdi/Config/Gen/Users.pm
+#    /usr/local/share/perl5/Dahdi/Config/Gen/Xpporder.pm
+#    /usr/local/share/perl5/Dahdi/Config/Params.pm
+#    /usr/local/share/perl5/Dahdi/Hardware.pm
+#    /usr/local/share/perl5/Dahdi/Hardware/PCI.pm
+#    /usr/local/share/perl5/Dahdi/Hardware/USB.pm
+#    /usr/local/share/perl5/Dahdi/Span.pm
+#    /usr/local/share/perl5/Dahdi/Utils.pm
+#    /usr/local/share/perl5/Dahdi/Xpp.pm
+#    /usr/local/share/perl5/Dahdi/Xpp/Line.pm
+#    /usr/local/share/perl5/Dahdi/Xpp/Mpp.pm
+#    /usr/local/share/perl5/Dahdi/Xpp/Xbus.pm
+#    /usr/local/share/perl5/Dahdi/Xpp/Xpd.pm
 #
 # Conditional build:
 %bcond_with	oslec		# with Open Source Line Echo Canceller
