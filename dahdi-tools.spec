@@ -19,7 +19,7 @@
 %undefine	with_xpp
 %endif
 
-%define		rel	11
+%define		rel	1
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
