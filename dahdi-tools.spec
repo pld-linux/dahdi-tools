@@ -3,32 +3,14 @@
 # warning: Installed (but unpackaged) file(s) found:
 #    /etc/hotplug/usb/xpp_fxloader
 #    /etc/hotplug/usb/xpp_fxloader.usermap
-#    /usr/local/share/perl5/Dahdi.pm
-#    /usr/local/share/perl5/Dahdi/Chans.pm
-#    /usr/local/share/perl5/Dahdi/Config/Gen.pm
-#    /usr/local/share/perl5/Dahdi/Config/Gen/Chandahdi.pm
-#    /usr/local/share/perl5/Dahdi/Config/Gen/Modules.pm
-#    /usr/local/share/perl5/Dahdi/Config/Gen/System.pm
-#    /usr/local/share/perl5/Dahdi/Config/Gen/Unicall.pm
-#    /usr/local/share/perl5/Dahdi/Config/Gen/Users.pm
-#    /usr/local/share/perl5/Dahdi/Config/Gen/Xpporder.pm
-#    /usr/local/share/perl5/Dahdi/Config/Params.pm
-#    /usr/local/share/perl5/Dahdi/Hardware.pm
-#    /usr/local/share/perl5/Dahdi/Hardware/PCI.pm
-#    /usr/local/share/perl5/Dahdi/Hardware/USB.pm
-#    /usr/local/share/perl5/Dahdi/Span.pm
-#    /usr/local/share/perl5/Dahdi/Utils.pm
-#    /usr/local/share/perl5/Dahdi/Xpp.pm
-#    /usr/local/share/perl5/Dahdi/Xpp/Line.pm
-#    /usr/local/share/perl5/Dahdi/Xpp/Mpp.pm
-#    /usr/local/share/perl5/Dahdi/Xpp/Xbus.pm
-#    /usr/local/share/perl5/Dahdi/Xpp/Xpd.pm
 #
 # Conditional build:
 %bcond_with	oslec		# with Open Source Line Echo Canceller
 %bcond_with	bristuff	# with bristuff support
 %bcond_without	xpp		# without Astribank
 %bcond_with	verbose
+
+%include	/usr/lib/rpm/macros.perl
 
 %ifarch sparc
 %undefine	with_smp
@@ -50,6 +32,7 @@ Source0:	http://downloads.digium.com/pub/telephony/dahdi-tools/%{name}-%{version
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-as-needed.patch
+Patch1:		%{name}-perl-path.patch
 URL:		http://www.asterisk.org/
 Obsoletes:	zaptel
 BuildRequires:	dahdi-linux-devel
@@ -57,6 +40,7 @@ BuildRequires:	newt-devel
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
 BuildRequires:	rpmbuild(macros) >= 1.379
+BuildRequires:	rpm-perlprov >= 4.1-13
 %{?with_bristuff:Provides:	dahdi(bristuff)}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -141,6 +125,7 @@ Perlowy interfejs do DAHDIa.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 %if %{with kernel}
 mkdir firmware
@@ -168,7 +153,7 @@ rm -rf $RPM_BUILD_ROOT
 
 install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,sysconfig}
 
-%{__make} install \
+%{__make} -j1 install \
 	DESTDIR=$RPM_BUILD_ROOT
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/dahdi
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/dahdi
@@ -221,6 +206,6 @@ fi
 
 %files -n perl-Dahdi
 %defattr(644,root,root,755)
-#%{perl_vendorlib}/Dahdi
-#%{perl_vendorlib}/Dahdi.pm
+%{perl_vendorlib}/Dahdi
+%{perl_vendorlib}/Dahdi.pm
 %endif
