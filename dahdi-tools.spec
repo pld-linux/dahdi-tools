@@ -23,19 +23,19 @@
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	2.2.0
+Version:	2.3.0
 Release:	%{rel}%{?with_bristuff:.bristuff}
 License:	GPL
 Group:		Base/Kernel
 Source0:	http://downloads.digium.com/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	a018f452f3851a312ff51705ac44de37
+# Source0-md5:	6c9e2da70e4503e4d93f1ad0c83e61af
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-as-needed.patch
 Patch1:		%{name}-perl-path.patch
 URL:		http://www.asterisk.org/
 Obsoletes:	zaptel
-BuildRequires:	dahdi-linux-devel
+BuildRequires:	dahdi-linux-devel >= 2.3.0
 BuildRequires:	newt-devel
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
