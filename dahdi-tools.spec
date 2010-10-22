@@ -23,12 +23,12 @@
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	2.3.0
+Version:	2.4.0
 Release:	%{rel}%{?with_bristuff:.bristuff}
 License:	GPL
 Group:		Base/Kernel
 Source0:	http://downloads.digium.com/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	6c9e2da70e4503e4d93f1ad0c83e61af
+# Source0-md5:	1b0f2f6e1338aca2742750ccaec11f41
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-as-needed.patch
