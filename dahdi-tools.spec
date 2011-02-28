@@ -19,7 +19,7 @@
 %undefine	with_xpp
 %endif
 
-%define		rel	1
+%define		rel	2
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
@@ -198,7 +198,7 @@ fi
 
 %files static
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/*.a
+%{_libdir}/*.a
 
 %files utils
 %defattr(644,root,root,755)
