@@ -23,25 +23,25 @@
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	2.4.0
+Version:	2.4.1
 Release:	%{rel}%{?with_bristuff:.bristuff}
 License:	GPL
 Group:		Base/Kernel
 Source0:	http://downloads.digium.com/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	1b0f2f6e1338aca2742750ccaec11f41
+# Source0-md5:	a06cf7c68b0b9fbb61f5804abd1a05e9
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-as-needed.patch
 Patch1:		%{name}-perl-path.patch
 URL:		http://www.asterisk.org/
-Obsoletes:	zaptel
 BuildRequires:	dahdi-linux-devel >= 2.3.0
 BuildRequires:	newt-devel
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
-BuildRequires:	rpmbuild(macros) >= 1.379
 BuildRequires:	rpm-perlprov >= 4.1-13
+BuildRequires:	rpmbuild(macros) >= 1.379
 %{?with_bristuff:Provides:	dahdi(bristuff)}
+Obsoletes:	zaptel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 # Rules:
@@ -61,8 +61,8 @@ Summary:	DAHDI development headers
 Summary(pl.UTF-8):	Pliki nagłówkowe DAHDI
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{rel}
-Obsoletes:	zaptel-devel
 %{?with_bristuff:Provides:	dahdi-devel(bristuff)}
+Obsoletes:	zaptel-devel
 
 %description devel
 DAHDI development headers.
@@ -86,8 +86,8 @@ Biblioteka statyczna DAHDI.
 %package utils
 Summary:	DAHDI utility programs
 Summary(pl.UTF-8):	Programy narzędziowe DAHDI
-Obsoletes:	zaptel-utils
 Group:		Applications/Communications
+Obsoletes:	zaptel-utils
 
 %description utils
 DAHDI card utility programs, mainly for diagnostics.
@@ -100,9 +100,9 @@ Summary:	DAHDI init scripts
 Summary(pl.UTF-8):	Skrypty inicjalizujące DAHDI
 Group:		Applications/Communications
 Requires(post,preun):	/sbin/chkconfig
-Obsoletes:	zaptel-init
 Requires:	%{name}-utils = %{version}-%{rel}
 Requires:	rc-scripts
+Obsoletes:	zaptel-init
 
 %description init
 DAHDI boot-time initialization.
