@@ -27,6 +27,7 @@ BuildRequires:	rpm-perlprov >= 4.1-13
 BuildRequires:	rpmbuild(macros) >= 1.379
 Obsoletes:	dahdi-tools-utils
 Obsoletes:	zaptel
+Obsoletes:	zaptel-utils
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -61,6 +62,18 @@ DAHDI static library.
 %description static -l pl.UTF-8
 Biblioteka statyczna DAHDI.
 
+%package perl
+Summary:	DAHDI utility programs written in Perl
+Summary(pl.UTF-8):	Programy narzędziowe DAHDI napisane w Perlu
+Group:		Applications/Communications
+Requires:	perl-Dahdi = %{version}-%{release}
+
+%description perl
+DAHDI utility programs written in Perl.
+
+%description perl -l pl.UTF-8
+Programy narzędziowe DAHDI napisane w Perlu.
+
 %package init
 Summary:	DAHDI init scripts
 Summary(pl.UTF-8):	Skrypty inicjalizujące DAHDI
@@ -80,6 +93,7 @@ Inicjalizacja DAHDI w czasie startu systemu.
 Summary:	Perl interface to DAHDI
 Summary(pl.UTF-8):	Perlowy interfejs do DAHDI
 Group:		Development/Languages/Perl
+# needs dahdi_scan
 Requires:	%{name} = %{version}-%{release}
 
 %description -n perl-Dahdi
@@ -140,27 +154,30 @@ fi
 #/etc/hotplug/usb/xpp_fxloader
 #/etc/hotplug/usb/xpp_fxloader.usermap
 %attr(755,root,root) %{_sbindir}/astribank_*
-%attr(755,root,root) %{_sbindir}/dahdi_*
+%attr(755,root,root) %{_sbindir}/dahdi_cfg
+%attr(755,root,root) %{_sbindir}/dahdi_maint
+%attr(755,root,root) %{_sbindir}/dahdi_monitor
+%attr(755,root,root) %{_sbindir}/dahdi_scan
+%attr(755,root,root) %{_sbindir}/dahdi_speed
+%attr(755,root,root) %{_sbindir}/dahdi_test
+%attr(755,root,root) %{_sbindir}/dahdi_tool
 %attr(755,root,root) %{_sbindir}/fpga_load
 %attr(755,root,root) %{_sbindir}/fxotune
-%attr(755,root,root) %{_sbindir}/lsdahdi
 %attr(755,root,root) %{_sbindir}/sethdlc
-%attr(755,root,root) %{_sbindir}/twinstar
-%attr(755,root,root) %{_sbindir}/xpp_blink
-%attr(755,root,root) %{_sbindir}/xpp_sync
 %attr(755,root,root) %{_libdir}/libtonezone.so.1.*
 %attr(755,root,root) %ghost %{_libdir}/libtonezone.so.1
 %attr(755,root,root) %{_libdir}/libtonezone.so.2.*
 %attr(755,root,root) %ghost %{_libdir}/libtonezone.so.2
 %{_datadir}/dahdi
 %{_mandir}/man8/astribank_*.8*
-%{_mandir}/man8/dahdi_*.8*
+%{_mandir}/man8/dahdi_cfg.8*
+%{_mandir}/man8/dahdi_maint.8*
+%{_mandir}/man8/dahdi_monitor.8*
+%{_mandir}/man8/dahdi_scan.8*
+%{_mandir}/man8/dahdi_test.8*
+%{_mandir}/man8/dahdi_tool.8*
 %{_mandir}/man8/fpga_load.8*
 %{_mandir}/man8/fxotune.8*
-%{_mandir}/man8/lsdahdi.8*
-%{_mandir}/man8/twinstar.8*
-%{_mandir}/man8/xpp_blink.8*
-%{_mandir}/man8/xpp_sync.8*
 
 %files devel
 %defattr(644,root,root,755)
@@ -170,6 +187,23 @@ fi
 %files static
 %defattr(644,root,root,755)
 %{_libdir}/libtonezone.a
+
+%files perl
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_sbindir}/dahdi_genconf
+%attr(755,root,root) %{_sbindir}/dahdi_hardware
+%attr(755,root,root) %{_sbindir}/dahdi_registration
+%attr(755,root,root) %{_sbindir}/lsdahdi
+%attr(755,root,root) %{_sbindir}/twinstar
+%attr(755,root,root) %{_sbindir}/xpp_blink
+%attr(755,root,root) %{_sbindir}/xpp_sync
+%{_mandir}/man8/dahdi_genconf.8*
+%{_mandir}/man8/dahdi_hardware.8*
+%{_mandir}/man8/dahdi_registration.8*
+%{_mandir}/man8/lsdahdi.8*
+%{_mandir}/man8/twinstar.8*
+%{_mandir}/man8/xpp_blink.8*
+%{_mandir}/man8/xpp_sync.8*
 
 %files init
 %defattr(644,root,root,755)
