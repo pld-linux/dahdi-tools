@@ -1,38 +1,23 @@
-#
 # TODO:
 # warning: Installed (but unpackaged) file(s) found:
 #    /etc/hotplug/usb/xpp_fxloader
 #    /etc/hotplug/usb/xpp_fxloader.usermap
 #
-# Conditional build:
-%bcond_with	oslec		# with Open Source Line Echo Canceller
-%bcond_with	bristuff	# with bristuff support
-%bcond_without	xpp		# without Astribank
-%bcond_with	verbose
-
 %include	/usr/lib/rpm/macros.perl
-
-%ifarch sparc
-%undefine	with_smp
-%endif
-%ifarch alpha
-%undefine	with_xpp
-%endif
-
-%define		rel	2
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	2.4.1
-Release:	%{rel}%{?with_bristuff:.bristuff}
-License:	GPL
+Version:	2.6.1
+Release:	1
+License:	GPL v2
 Group:		Base/Kernel
 Source0:	http://downloads.digium.com/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	a06cf7c68b0b9fbb61f5804abd1a05e9
+# Source0-md5:	c2e4f476a8e7f96a5cad46dd9b648446
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-as-needed.patch
 Patch1:		%{name}-perl-path.patch
+Patch2:		%{name}-includes.patch
 URL:		http://www.asterisk.org/
 BuildRequires:	dahdi-linux-devel >= 2.3.0
 BuildRequires:	newt-devel
@@ -40,15 +25,9 @@ BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
 BuildRequires:	rpm-perlprov >= 4.1-13
 BuildRequires:	rpmbuild(macros) >= 1.379
-%{?with_bristuff:Provides:	dahdi(bristuff)}
+Obsoletes:	dahdi-tools-utils
 Obsoletes:	zaptel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
-
-# Rules:
-# - modules_X: single modules, just name module with no suffix
-# - modules_X: subdir modules are just directory name with slash like dirname/
-# - keep X and X_in in sync
-# - X is used for actual building (entries separated with space), X_in for pld macros (entries separated with comma)
 
 %description
 DAHDI telephony device driver.
@@ -60,8 +39,8 @@ Sterownik do urządzeń telefonicznych DAHDI.
 Summary:	DAHDI development headers
 Summary(pl.UTF-8):	Pliki nagłówkowe DAHDI
 Group:		Development/Libraries
-Requires:	%{name} = %{version}-%{rel}
-%{?with_bristuff:Provides:	dahdi-devel(bristuff)}
+Requires:	%{name} = %{version}-%{release}
+Requires:	dahdi-linux-devel
 Obsoletes:	zaptel-devel
 
 %description devel
@@ -74,8 +53,7 @@ Pliki nagłówkowe DAHDI.
 Summary:	DAHDI static library
 Summary(pl.UTF-8):	Biblioteka statyczna DAHDI
 Group:		Development/Libraries
-Requires:	%{name}-devel = %{version}-%{rel}
-%{?with_bristuff:Provides:	dahdi-static(bristuff)}
+Requires:	%{name}-devel = %{version}-%{release}
 
 %description static
 DAHDI static library.
@@ -83,24 +61,12 @@ DAHDI static library.
 %description static -l pl.UTF-8
 Biblioteka statyczna DAHDI.
 
-%package utils
-Summary:	DAHDI utility programs
-Summary(pl.UTF-8):	Programy narzędziowe DAHDI
-Group:		Applications/Communications
-Obsoletes:	zaptel-utils
-
-%description utils
-DAHDI card utility programs, mainly for diagnostics.
-
-%description utils -l pl.UTF-8
-Programy narzędziowe do kart DAHDI, służące głównie do diagnostyki.
-
 %package init
 Summary:	DAHDI init scripts
 Summary(pl.UTF-8):	Skrypty inicjalizujące DAHDI
 Group:		Applications/Communications
 Requires(post,preun):	/sbin/chkconfig
-Requires:	%{name}-utils = %{version}-%{rel}
+Requires:	%{name} = %{version}-%{release}
 Requires:	rc-scripts
 Obsoletes:	zaptel-init
 
@@ -112,27 +78,21 @@ Inicjalizacja DAHDI w czasie startu systemu.
 
 %package -n perl-Dahdi
 Summary:	Perl interface to DAHDI
-Summary(pl.UTF-8):	Perlowy interfejs do DAHDIa
+Summary(pl.UTF-8):	Perlowy interfejs do DAHDI
 Group:		Development/Languages/Perl
-Requires:	%{name} = %{version}-%{rel}
+Requires:	%{name} = %{version}-%{release}
 
 %description -n perl-Dahdi
 Perl inferface to DAHDI.
 
 %description -n perl-Dahdi -l pl.UTF-8
-Perlowy interfejs do DAHDIa.
+Perlowy interfejs do DAHDI.
 
 %prep
 %setup -q
 %patch0 -p1
 %patch1 -p1
-
-%if %{with kernel}
-mkdir firmware
-for a in %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6}; do
-	ln -s $a firmware
-	tar -C firmware -xzf $a
-done
+%patch2 -p1
 
 cat > download-logger <<'EOF'
 #!/bin/sh
@@ -140,7 +100,6 @@ cat > download-logger <<'EOF'
 echo "$@" >> download.log
 EOF
 chmod a+rx download-logger
-%endif
 
 %build
 %configure
@@ -180,32 +139,44 @@ fi
 %attr(600,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/dahdi/system.conf
 #/etc/hotplug/usb/xpp_fxloader
 #/etc/hotplug/usb/xpp_fxloader.usermap
-%attr(755,root,root) %{_sbindir}/*
-%attr(755,root,root) %{_libdir}/*.so.*
-%if %{with xpp}
+%attr(755,root,root) %{_sbindir}/astribank_*
+%attr(755,root,root) %{_sbindir}/dahdi_*
+%attr(755,root,root) %{_sbindir}/fpga_load
+%attr(755,root,root) %{_sbindir}/fxotune
+%attr(755,root,root) %{_sbindir}/lsdahdi
+%attr(755,root,root) %{_sbindir}/sethdlc
+%attr(755,root,root) %{_sbindir}/twinstar
+%attr(755,root,root) %{_sbindir}/xpp_blink
+%attr(755,root,root) %{_sbindir}/xpp_sync
+%attr(755,root,root) %{_libdir}/libtonezone.so.1.*
+%attr(755,root,root) %ghost %{_libdir}/libtonezone.so.1
+%attr(755,root,root) %{_libdir}/libtonezone.so.2.*
+%attr(755,root,root) %ghost %{_libdir}/libtonezone.so.2
 %{_datadir}/dahdi
-%{_mandir}/man8/*
-
-%files init
-%defattr(644,root,root,755)
-%attr(754,root,root) /etc/rc.d/init.d/*
-%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/dahdi
+%{_mandir}/man8/astribank_*.8*
+%{_mandir}/man8/dahdi_*.8*
+%{_mandir}/man8/fpga_load.8*
+%{_mandir}/man8/fxotune.8*
+%{_mandir}/man8/lsdahdi.8*
+%{_mandir}/man8/twinstar.8*
+%{_mandir}/man8/xpp_blink.8*
+%{_mandir}/man8/xpp_sync.8*
 
 %files devel
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/*.so
-%{_includedir}/dahdi
+%attr(755,root,root) %{_libdir}/libtonezone.so
+%{_includedir}/dahdi/tonezone.h
 
 %files static
 %defattr(644,root,root,755)
-%{_libdir}/*.a
+%{_libdir}/libtonezone.a
 
-%files utils
+%files init
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_sbindir}/*
+%attr(754,root,root) /etc/rc.d/init.d/dahdi
+%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/dahdi
 
 %files -n perl-Dahdi
 %defattr(644,root,root,755)
 %{perl_vendorlib}/Dahdi
 %{perl_vendorlib}/Dahdi.pm
-%endif
