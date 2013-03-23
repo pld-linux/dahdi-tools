@@ -7,12 +7,12 @@
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	2.6.1
+Version:	2.6.2
 Release:	1
 License:	GPL v2
 Group:		Base/Kernel
 Source0:	http://downloads.digium.com/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	c2e4f476a8e7f96a5cad46dd9b648446
+# Source0-md5:	bd23765d25869d9bad70849e762b171b
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-as-needed.patch
