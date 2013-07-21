@@ -7,12 +7,12 @@
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	2.6.2
+Version:	2.7.0
 Release:	1
 License:	GPL v2
 Group:		Base/Kernel
-Source0:	http://downloads.digium.com/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	bd23765d25869d9bad70849e762b171b
+Source0:	http://downloads.asterisk.org/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
+# Source0-md5:	fd1c8e6351abae02d053d85292169a16
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-as-needed.patch
@@ -20,6 +20,7 @@ Patch1:		%{name}-perl-path.patch
 Patch2:		%{name}-includes.patch
 URL:		http://www.asterisk.org/
 BuildRequires:	dahdi-linux-devel >= 2.3.0
+BuildRequires:	libusb-compat-devel >= 0.1
 BuildRequires:	newt-devel
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
@@ -161,7 +162,6 @@ fi
 %attr(755,root,root) %{_sbindir}/dahdi_speed
 %attr(755,root,root) %{_sbindir}/dahdi_test
 %attr(755,root,root) %{_sbindir}/dahdi_tool
-%attr(755,root,root) %{_sbindir}/fpga_load
 %attr(755,root,root) %{_sbindir}/fxotune
 %attr(755,root,root) %{_sbindir}/sethdlc
 %attr(755,root,root) %{_libdir}/libtonezone.so.1.*
@@ -176,7 +176,6 @@ fi
 %{_mandir}/man8/dahdi_scan.8*
 %{_mandir}/man8/dahdi_test.8*
 %{_mandir}/man8/dahdi_tool.8*
-%{_mandir}/man8/fpga_load.8*
 %{_mandir}/man8/fxotune.8*
 
 %files devel
