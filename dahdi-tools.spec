@@ -7,12 +7,12 @@
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	2.7.0
+Version:	2.7.0.1
 Release:	1
 License:	GPL v2
 Group:		Base/Kernel
 Source0:	http://downloads.asterisk.org/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	fd1c8e6351abae02d053d85292169a16
+# Source0-md5:	a0de4eb4e5f556441a3ded8e88d7d321
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-as-needed.patch
