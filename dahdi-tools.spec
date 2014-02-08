@@ -1,18 +1,26 @@
 # TODO:
 # warning: Installed (but unpackaged) file(s) found:
-#    /etc/hotplug/usb/xpp_fxloader
-#    /etc/hotplug/usb/xpp_fxloader.usermap
+#	/etc/bash_completion.d/dahdi
+#	/etc/dahdi/assigned-spans.conf.sample
+#	/etc/dahdi/genconf_parameters
+#	/etc/dahdi/init.conf
+#	/etc/dahdi/modules
+#	/etc/dahdi/span-types.conf.sample
+#	/etc/hotplug/usb/xpp_fxloader
+#	/etc/hotplug/usb/xpp_fxloader.usermap
+#	/etc/modprobe.d/dahdi.blacklist.conf
+#	/etc/modprobe.d/dahdi.conf
 #
 %include	/usr/lib/rpm/macros.perl
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	2.7.0.1
+Version:	2.9.0
 Release:	1
 License:	GPL v2
 Group:		Base/Kernel
 Source0:	http://downloads.asterisk.org/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	a0de4eb4e5f556441a3ded8e88d7d321
+# Source0-md5:	8cccad1956d3419daf0c1771ea0504ac
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-as-needed.patch
@@ -90,6 +98,20 @@ DAHDI boot-time initialization.
 %description init -l pl.UTF-8
 Inicjalizacja DAHDI w czasie startu systemu.
 
+%package udev
+Summary:	udev rules for DAHDI kernel modules
+Summary(pl.UTF-8):	Reguły udev dla modułów jądra Linuksa dla DAHDI
+Group:		Base/Kernel
+Obsoletes:	dahdi-linux-udev < 2.9.0
+Requires:	%{name} >= 2.2.0
+Requires:	udev-core
+
+%description udev
+udev rules for DAHDI kernel modules.
+
+%description udev -l pl.UTF-8
+Reguły udev dla modułów jądra Linuksa dla DAHDI.
+
 %package -n perl-Dahdi
 Summary:	Perl interface to DAHDI
 Summary(pl.UTF-8):	Perlowy interfejs do DAHDI
@@ -127,8 +149,9 @@ rm -rf $RPM_BUILD_ROOT
 
 install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,sysconfig}
 
-%{__make} -j1 install \
+%{__make} -j1 config install \
 	DESTDIR=$RPM_BUILD_ROOT
+
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/dahdi
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/dahdi
 touch $RPM_BUILD_ROOT%{_sysconfdir}/dahdi.conf
@@ -162,6 +185,9 @@ fi
 %attr(755,root,root) %{_sbindir}/dahdi_speed
 %attr(755,root,root) %{_sbindir}/dahdi_test
 %attr(755,root,root) %{_sbindir}/dahdi_tool
+%attr(755,root,root) %{_sbindir}/dahdi_span_assignments
+%attr(755,root,root) %{_sbindir}/dahdi_span_types
+%attr(755,root,root) %{_sbindir}/dahdi_waitfor_span_assignments
 %attr(755,root,root) %{_sbindir}/fxotune
 %attr(755,root,root) %{_sbindir}/sethdlc
 %attr(755,root,root) %{_libdir}/libtonezone.so.1.*
@@ -177,6 +203,9 @@ fi
 %{_mandir}/man8/dahdi_test.8*
 %{_mandir}/man8/dahdi_tool.8*
 %{_mandir}/man8/fxotune.8*
+%{_mandir}/man8/dahdi_span_assignments.8*
+%{_mandir}/man8/dahdi_span_types.8*
+%{_mandir}/man8/dahdi_waitfor_span_assignments.8*
 
 %files devel
 %defattr(644,root,root,755)
@@ -208,6 +237,11 @@ fi
 %defattr(644,root,root,755)
 %attr(754,root,root) /etc/rc.d/init.d/dahdi
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/dahdi
+
+%files udev
+%defattr(644,root,root,755)
+%config(noreplace) %verify(not md5 mtime size) /etc/udev/rules.d/dahdi.rules
+%config(noreplace) %verify(not md5 mtime size) /etc/udev/rules.d/xpp.rules
 
 %files -n perl-Dahdi
 %defattr(644,root,root,755)
