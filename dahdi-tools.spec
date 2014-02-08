@@ -1,15 +1,6 @@
-# TODO:
-# warning: Installed (but unpackaged) file(s) found:
-#	/etc/bash_completion.d/dahdi
-#	/etc/dahdi/assigned-spans.conf.sample
-#	/etc/dahdi/genconf_parameters
-#	/etc/dahdi/init.conf
-#	/etc/dahdi/modules
-#	/etc/dahdi/span-types.conf.sample
-#	/etc/hotplug/usb/xpp_fxloader
-#	/etc/hotplug/usb/xpp_fxloader.usermap
-#	/etc/modprobe.d/dahdi.blacklist.conf
-#	/etc/modprobe.d/dahdi.conf
+#
+# Conditional build
+%bcond_with	hotplug		# old-style (pre-udev) hotplug support
 #
 %include	/usr/lib/rpm/macros.perl
 Summary:	DAHDI telephony device support
@@ -112,6 +103,19 @@ udev rules for DAHDI kernel modules.
 %description udev -l pl.UTF-8
 Reguły udev dla modułów jądra Linuksa dla DAHDI.
 
+%package -n bash-completion-dahdi
+Summary:	Bash completion for DAHDI commands
+Summary(pl.UTF-8):	Bashowe dopełnianie składni dla poleceń DAHDI
+Group:		Applications/Shells
+Requires:	%{name} = %{version}-%{release}
+Requires:	bash-completion
+
+%description -n bash-completion-dahdi
+Bash completion for DAHDI commands.
+
+%description -n bash-completion-dahdi -l pl.UTF-8
+Bashowe dopełnianie składni dla poleceń DAHDI.
+
 %package -n perl-Dahdi
 Summary:	Perl interface to DAHDI
 Summary(pl.UTF-8):	Perlowy interfejs do DAHDI
@@ -146,7 +150,6 @@ chmod a+rx download-logger
 
 %install
 rm -rf $RPM_BUILD_ROOT
-
 install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,sysconfig}
 
 %{__make} -j1 config install \
@@ -155,6 +158,17 @@ install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,sysconfig}
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/dahdi
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/dahdi
 touch $RPM_BUILD_ROOT%{_sysconfdir}/dahdi.conf
+
+# sample configuration files - nothing enabled by default, so safe to install
+%{__mv} $RPM_BUILD_ROOT%{_sysconfdir}/dahdi/assigned-spans.conf{.sample,}
+%{__mv} $RPM_BUILD_ROOT%{_sysconfdir}/dahdi/span-types.conf{.sample,}
+
+# old-style hotplug stuff
+%if %{without hotplug}
+%{__rm} $RPM_BUILD_ROOT/etc/hotplug/usb/xpp_*
+%endif
+# used by upstream (but not PLD) init script
+%{__rm} $RPM_BUILD_ROOT%{_sysconfdir}/dahdi/{init.conf,modules}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -175,8 +189,14 @@ fi
 %attr(600,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/dahdi.conf
 %dir %{_sysconfdir}/dahdi
 %attr(600,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/dahdi/system.conf
-#/etc/hotplug/usb/xpp_fxloader
-#/etc/hotplug/usb/xpp_fxloader.usermap
+%attr(600,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/dahdi/assigned-spans.conf
+%attr(600,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/dahdi/span-types.conf
+%if %{with hotplug}
+%attr(755,root,root) /etc/hotplug/usb/xpp_fxloader
+/etc/hotplug/usb/xpp_fxloader.usermap
+%endif
+%config(noreplace) %verify(not md5 mtime size) /etc/modprobe.d/dahdi.blacklist.conf
+%config(noreplace) %verify(not md5 mtime size) /etc/modprobe.d/dahdi.conf
 %attr(755,root,root) %{_sbindir}/astribank_*
 %attr(755,root,root) %{_sbindir}/dahdi_cfg
 %attr(755,root,root) %{_sbindir}/dahdi_maint
@@ -225,6 +245,8 @@ fi
 %attr(755,root,root) %{_sbindir}/twinstar
 %attr(755,root,root) %{_sbindir}/xpp_blink
 %attr(755,root,root) %{_sbindir}/xpp_sync
+# for dahdi_genconf
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/dahdi/genconf_parameters
 %{_mandir}/man8/dahdi_genconf.8*
 %{_mandir}/man8/dahdi_hardware.8*
 %{_mandir}/man8/dahdi_registration.8*
@@ -242,6 +264,10 @@ fi
 %defattr(644,root,root,755)
 %config(noreplace) %verify(not md5 mtime size) /etc/udev/rules.d/dahdi.rules
 %config(noreplace) %verify(not md5 mtime size) /etc/udev/rules.d/xpp.rules
+
+%files -n bash-completion-dahdi
+%defattr(644,root,root,755)
+/etc/bash_completion.d/dahdi
 
 %files -n perl-Dahdi
 %defattr(644,root,root,755)
