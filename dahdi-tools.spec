@@ -1,17 +1,18 @@
 #
 # Conditional build
 %bcond_with	hotplug		# old-style (pre-udev) hotplug support
+%bcond_without	ppp		# pppd plugin
 #
 %include	/usr/lib/rpm/macros.perl
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	2.9.0.1
+Version:	2.9.1
 Release:	1
 License:	GPL v2
 Group:		Base/Kernel
 Source0:	http://downloads.asterisk.org/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	ac17ca5b31eef8fd866e40c1e14363d9
+# Source0-md5:	140729230c6d2a73ba88c723d7e3c0d9
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-as-needed.patch
@@ -23,6 +24,7 @@ BuildRequires:	libusb-compat-devel >= 0.1
 BuildRequires:	newt-devel
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
+%{?with_ppp:BuildRequires:	ppp-plugin-devel}
 BuildRequires:	rpm-perlprov >= 4.1-13
 BuildRequires:	rpmbuild(macros) >= 1.379
 Obsoletes:	dahdi-tools-utils
@@ -129,6 +131,18 @@ Perl inferface to DAHDI.
 %description -n perl-Dahdi -l pl.UTF-8
 Perlowy interfejs do DAHDI.
 
+%package -n ppp-plugin-dahdi
+Summary:	DAHDI plugin for PPP daemon
+Summary(pl.UTF-8):	Wtyczka DAHDI dla demona PPP
+Group:		Libraries
+Requires:	ppp
+
+%description -n ppp-plugin-dahdi
+DAHDI plugin for PPP daemon.
+
+%description -n ppp-plugin-dahdi -l pl.UTF-8
+Wtyczka DAHDI dla demona PPP.
+
 %prep
 %setup -q
 %patch0 -p1
@@ -148,12 +162,24 @@ chmod a+rx download-logger
 	CC="%{__cc}" \
 	OPTFLAGS="%{rpmcppflags} %{rpmcflags}"
 
+%if %{with ppp}
+%{__make} -C ppp \
+	CC="%{__cc}" \
+	COPTS="%{rpmcflags} %{rpmcppflags}"
+%endif
+
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,sysconfig}
 
 %{__make} -j1 config install \
 	DESTDIR=$RPM_BUILD_ROOT
+
+%if %{with ppp}
+%{__make} -C ppp install \
+	DESTDIR=$RPM_BUILD_ROOT \
+	LIBDIR=%{_libdir}/pppd/plugins
+%endif
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/dahdi
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/dahdi
@@ -273,3 +299,9 @@ fi
 %defattr(644,root,root,755)
 %{perl_vendorlib}/Dahdi
 %{perl_vendorlib}/Dahdi.pm
+
+%if %{with ppp}
+%files -n ppp-plugin-dahdi
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/pppd/plugins/dahdi.so
+%endif
