@@ -179,6 +179,9 @@ install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,sysconfig}
 %{__make} -C ppp install \
 	DESTDIR=$RPM_BUILD_ROOT \
 	LIBDIR=%{_libdir}/pppd/plugins
+
+# let rpm autogenerate dependencies
+chmod 755 $RPM_BUILD_ROOT%{_libdir}/pppd/plugins/*.so
 %endif
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/dahdi
