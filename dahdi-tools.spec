@@ -1,32 +1,31 @@
 #
 # Conditional build
-%bcond_with	hotplug		# old-style (pre-udev) hotplug support
 %bcond_without	ppp		# pppd plugin
 #
 %include	/usr/lib/rpm/macros.perl
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	2.10.2
+Version:	2.11.1
 Release:	1
 License:	GPL v2
-Group:		Base/Kernel
+Group:		Applications/System
 Source0:	http://downloads.asterisk.org/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	6928cdf6f7710299ecbcacbac20d5c92
+# Source0-md5:	8a908640d0ff7f8cbcdccd23f5022ede
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
-Patch0:		%{name}-as-needed.patch
-Patch1:		%{name}-perl-path.patch
-Patch2:		%{name}-includes.patch
+Patch0:		%{name}-includes.patch
 URL:		http://www.asterisk.org/
 BuildRequires:	dahdi-linux-devel >= 2.3.0
-BuildRequires:	libusb-compat-devel >= 0.1
+BuildRequires:	libpcap-devel
+BuildRequires:	libusb-devel >= 1.0.9
 BuildRequires:	newt-devel
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
 %{?with_ppp:BuildRequires:	ppp-plugin-devel}
 BuildRequires:	rpm-perlprov >= 4.1-13
 BuildRequires:	rpmbuild(macros) >= 1.379
+Requires:	libusb >= 1.0.9
 Obsoletes:	dahdi-tools-utils
 Obsoletes:	zaptel
 Obsoletes:	zaptel-utils
@@ -94,7 +93,7 @@ Inicjalizacja DAHDI w czasie startu systemu.
 %package udev
 Summary:	udev rules for DAHDI kernel modules
 Summary(pl.UTF-8):	Reguły udev dla modułów jądra Linuksa dla DAHDI
-Group:		Base/Kernel
+Group:		Applications/System
 Obsoletes:	dahdi-linux-udev < 2.9.0
 Requires:	%{name} >= 2.2.0
 Requires:	udev-core
@@ -146,8 +145,6 @@ Wtyczka DAHDI dla demona PPP.
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
 
 cat > download-logger <<'EOF'
 #!/bin/sh
@@ -157,31 +154,24 @@ EOF
 chmod a+rx download-logger
 
 %build
-%configure
-%{__make} \
-	CC="%{__cc}" \
-	OPTFLAGS="%{rpmcppflags} %{rpmcflags}"
+%configure \
+	--disable-silent-rules \
+	--with-perllib=%{perl_vendorlib} \
+	%{!?with_ppp:--without-ppp}
 
-%if %{with ppp}
-%{__make} -C ppp \
-	CC="%{__cc}" \
-	COPTS="%{rpmcflags} %{rpmcppflags}"
-%endif
+%{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,sysconfig}
 
-%{__make} -j1 config install \
-	DESTDIR=$RPM_BUILD_ROOT
-
-%if %{with ppp}
-%{__make} -C ppp install \
+%{__make} -j1 install install-config \
 	DESTDIR=$RPM_BUILD_ROOT \
-	LIBDIR=%{_libdir}/pppd/plugins
+	PPPD_VERSION=plugins
 
-# let rpm autogenerate dependencies
-chmod 755 $RPM_BUILD_ROOT%{_libdir}/pppd/plugins/*.so
+%{__rm} $RPM_BUILD_ROOT%{_libdir}/libtonezone.la
+%if %{with ppp}
+%{__rm} $RPM_BUILD_ROOT%{_libdir}/pppd/plugins/dahdi.{la,a}
 %endif
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/dahdi
@@ -191,13 +181,10 @@ touch $RPM_BUILD_ROOT%{_sysconfdir}/dahdi.conf
 # sample configuration files - nothing enabled by default, so safe to install
 %{__mv} $RPM_BUILD_ROOT%{_sysconfdir}/dahdi/assigned-spans.conf{.sample,}
 %{__mv} $RPM_BUILD_ROOT%{_sysconfdir}/dahdi/span-types.conf{.sample,}
+%{__mv} $RPM_BUILD_ROOT%{_sysconfdir}/dahdi/system.conf{.sample,}
 
-# old-style hotplug stuff
-%if %{without hotplug}
-%{__rm} $RPM_BUILD_ROOT/etc/hotplug/usb/xpp_*
-%endif
 # used by upstream (but not PLD) init script
-%{__rm} $RPM_BUILD_ROOT%{_sysconfdir}/dahdi/{init.conf,modules}
+%{__rm} $RPM_BUILD_ROOT%{_sysconfdir}/dahdi/{init.conf,modules.sample}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -220,11 +207,7 @@ fi
 %attr(600,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/dahdi/system.conf
 %attr(600,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/dahdi/assigned-spans.conf
 %attr(600,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/dahdi/span-types.conf
-%if %{with hotplug}
-%attr(755,root,root) /etc/hotplug/usb/xpp_fxloader
-/etc/hotplug/usb/xpp_fxloader.usermap
-%endif
-%config(noreplace) %verify(not md5 mtime size) /etc/modprobe.d/dahdi.blacklist.conf
+%config(noreplace) %verify(not md5 mtime size) /etc/modprobe.d/dahdi-blacklist.conf
 %config(noreplace) %verify(not md5 mtime size) /etc/modprobe.d/dahdi.conf
 %attr(755,root,root) %{_sbindir}/astribank_*
 %attr(755,root,root) %{_sbindir}/dahdi_cfg
@@ -239,8 +222,7 @@ fi
 %attr(755,root,root) %{_sbindir}/dahdi_waitfor_span_assignments
 %attr(755,root,root) %{_sbindir}/fxotune
 %attr(755,root,root) %{_sbindir}/sethdlc
-%attr(755,root,root) %{_libdir}/libtonezone.so.1.*
-%attr(755,root,root) %ghost %{_libdir}/libtonezone.so.1
+%attr(755,root,root) %{_sbindir}/xtalk_send
 %attr(755,root,root) %{_libdir}/libtonezone.so.2.*
 %attr(755,root,root) %ghost %{_libdir}/libtonezone.so.2
 %{_datadir}/dahdi
@@ -249,12 +231,13 @@ fi
 %{_mandir}/man8/dahdi_maint.8*
 %{_mandir}/man8/dahdi_monitor.8*
 %{_mandir}/man8/dahdi_scan.8*
-%{_mandir}/man8/dahdi_test.8*
-%{_mandir}/man8/dahdi_tool.8*
-%{_mandir}/man8/fxotune.8*
 %{_mandir}/man8/dahdi_span_assignments.8*
 %{_mandir}/man8/dahdi_span_types.8*
+%{_mandir}/man8/dahdi_test.8*
+%{_mandir}/man8/dahdi_tool.8*
 %{_mandir}/man8/dahdi_waitfor_span_assignments.8*
+%{_mandir}/man8/fxotune.8*
+%{_mandir}/man8/xtalk_send.8*
 
 %files devel
 %defattr(644,root,root,755)
