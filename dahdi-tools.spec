@@ -2,7 +2,6 @@
 # Conditional build
 %bcond_without	ppp		# pppd plugin
 #
-%include	/usr/lib/rpm/macros.perl
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
