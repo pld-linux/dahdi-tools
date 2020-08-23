@@ -1,3 +1,4 @@
+# TODO: package /etc/dracut.conf.d/50-dahdi.conf
 #
 # Conditional build
 %bcond_without	ppp		# pppd plugin
@@ -5,25 +6,29 @@
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	2.11.1
+Version:	3.1.0
 Release:	1
 License:	GPL v2
 Group:		Applications/System
 Source0:	http://downloads.asterisk.org/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	8a908640d0ff7f8cbcdccd23f5022ede
+# Source0-md5:	bc9f39264e5a862dde92f206c55d1162
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-includes.patch
 URL:		http://www.asterisk.org/
+BuildRequires:	asciidoc
+BuildRequires:	autoconf >= 2.59
+BuildRequires:	automake
 BuildRequires:	dahdi-linux-devel >= 2.3.0
 BuildRequires:	libpcap-devel
+BuildRequires:	libtool
 BuildRequires:	libusb-devel >= 1.0.9
 BuildRequires:	newt-devel
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
 %{?with_ppp:BuildRequires:	ppp-plugin-devel}
 BuildRequires:	rpm-perlprov >= 4.1-13
-BuildRequires:	rpmbuild(macros) >= 1.379
+BuildRequires:	rpmbuild(macros) >= 1.745
 Requires:	libusb >= 1.0.9
 Obsoletes:	dahdi-tools-utils
 Obsoletes:	zaptel
@@ -153,6 +158,11 @@ EOF
 chmod a+rx download-logger
 
 %build
+%{__libtoolize}
+%{__aclocal} -I m4
+%{__autoconf}
+%{__autoheader}
+%{__automake}
 %configure \
 	--disable-silent-rules \
 	--with-perllib=%{perl_vendorlib} \
@@ -166,7 +176,8 @@ install -d $RPM_BUILD_ROOT/etc/{rc.d/init.d,sysconfig}
 
 %{__make} -j1 install install-config \
 	DESTDIR=$RPM_BUILD_ROOT \
-	PPPD_VERSION=plugins
+	PPPD_VERSION=plugins \
+	dracutconfdir=/etc/dracut.conf.d
 
 %{__rm} $RPM_BUILD_ROOT%{_libdir}/libtonezone.la
 %if %{with ppp}
@@ -221,7 +232,6 @@ fi
 %attr(755,root,root) %{_sbindir}/dahdi_waitfor_span_assignments
 %attr(755,root,root) %{_sbindir}/fxotune
 %attr(755,root,root) %{_sbindir}/sethdlc
-%attr(755,root,root) %{_sbindir}/xtalk_send
 %attr(755,root,root) %{_libdir}/libtonezone.so.2.*
 %attr(755,root,root) %ghost %{_libdir}/libtonezone.so.2
 %{_datadir}/dahdi
@@ -236,7 +246,6 @@ fi
 %{_mandir}/man8/dahdi_tool.8*
 %{_mandir}/man8/dahdi_waitfor_span_assignments.8*
 %{_mandir}/man8/fxotune.8*
-%{_mandir}/man8/xtalk_send.8*
 
 %files devel
 %defattr(644,root,root,755)
