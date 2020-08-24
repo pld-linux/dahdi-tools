@@ -15,6 +15,7 @@ Source0:	http://downloads.asterisk.org/pub/telephony/dahdi-tools/%{name}-%{versi
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-includes.patch
+Patch1:		link.patch
 URL:		http://www.asterisk.org/
 BuildRequires:	asciidoc
 BuildRequires:	autoconf >= 2.59
@@ -94,18 +95,32 @@ DAHDI boot-time initialization.
 %description init -l pl.UTF-8
 Inicjalizacja DAHDI w czasie startu systemu.
 
-%package udev
+%package -n dracut-dahdi-tools
+Summary:	dracut rules for DAHDI kernel modules
+Summary(pl.UTF-8):	Reguły dracut dla modułów jądra Linuksa dla DAHDI
+Group:		Applications/System
+Requires:	%{name} >= 2.2.0
+Requires:	dracut
+
+%description -n dracut-dahdi-tools
+dracut rules for DAHDI kernel modules.
+
+%description -n dracut-dahdi-tools -l pl.UTF-8
+Reguły dracut dla modułów jądra Linuksa dla DAHDI.
+
+%package -n udev-dahdi-tools
 Summary:	udev rules for DAHDI kernel modules
 Summary(pl.UTF-8):	Reguły udev dla modułów jądra Linuksa dla DAHDI
 Group:		Applications/System
 Obsoletes:	dahdi-linux-udev < 2.9.0
+Obsoletes:	dahdi-tools-udev < 3.1.0
 Requires:	%{name} >= 2.2.0
 Requires:	udev-core
 
-%description udev
+%description -n udev-dahdi-tools
 udev rules for DAHDI kernel modules.
 
-%description udev -l pl.UTF-8
+%description -n udev-dahdi-tools -l pl.UTF-8
 Reguły udev dla modułów jądra Linuksa dla DAHDI.
 
 %package -n bash-completion-dahdi
@@ -149,6 +164,7 @@ Wtyczka DAHDI dla demona PPP.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 cat > download-logger <<'EOF'
 #!/bin/sh
@@ -280,10 +296,14 @@ fi
 %attr(754,root,root) /etc/rc.d/init.d/dahdi
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/dahdi
 
-%files udev
+%files -n udev-dahdi-tools
 %defattr(644,root,root,755)
 %config(noreplace) %verify(not md5 mtime size) /etc/udev/rules.d/dahdi.rules
 %config(noreplace) %verify(not md5 mtime size) /etc/udev/rules.d/xpp.rules
+
+%files -n dracut-dahdi-tools
+%defattr(644,root,root,755)
+/etc/dracut.conf.d/50-dahdi.conf
 
 %files -n bash-completion-dahdi
 %defattr(644,root,root,755)
