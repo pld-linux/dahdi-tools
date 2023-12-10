@@ -27,6 +27,7 @@ BuildRequires:	libusb-devel >= 1.0.9
 BuildRequires:	newt-devel
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
+BuildRequires:	pkgconfig
 %{?with_ppp:BuildRequires:	ppp-plugin-devel >= 3:2.5.0}
 BuildRequires:	rpm-perlprov >= 4.1-13
 BuildRequires:	rpmbuild(macros) >= 1.745
