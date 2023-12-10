@@ -1,0 +1,200 @@
+--- dahdi-tools-3.3.0/configure.ac.orig	2023-12-07 07:27:33.000000000 +0100
++++ dahdi-tools-3.3.0/configure.ac	2023-12-10 16:29:22.580323430 +0100
+@@ -333,7 +333,7 @@ case "$with_ppp" in
+ 	*) ppp_path="$with_ppp" ;;
+ esac
+ 
+-level_file="$ppp_path/include/pppd/patchlevel.h"
++level_file="$ppp_path/include/pppd/pppdconf.h"
+ PPP_VERSION=
+ if test "$ppp_path" != '' && test -r "$level_file"; then
+ 	PPPD_VERSION=`awk -F '"' '/VERSION/ { print $$2; }' $level_file`
+@@ -345,7 +345,7 @@ case "$with_ppp" in
+ 	# If we asked explicitly for ppp support
+ 	if test "$PPPD_VERSION" = ''; then
+ 		# but have not detected it
+-		AC_MSG_ERROR(failed to find pppd/patchlevel.h: no ppp support.)
++		AC_MSG_ERROR(failed to find pppd/pppdconf.h: no ppp support.)
+ 	fi
+ 	;;
+ esac
+--- dahdi-tools-3.3.0/ppp/dahdi.c.orig	2023-12-07 07:27:33.000000000 +0100
++++ dahdi-tools-3.3.0/ppp/dahdi.c	2023-12-10 18:09:40.067723903 +0100
+@@ -35,21 +35,23 @@
+ #include <errno.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
++#include <stdio.h>
+ 
+ #include <pppd/pppd.h>
+ #include <pppd/fsm.h>
+ #include <pppd/lcp.h>
+ #include <pppd/ipcp.h>
+ #include <pppd/ccp.h>
+-#include <pppd/pathnames.h>
++#include <pppd/options.h>
++#include <pppd/pppdconf.h>
+ 
+ #include <dahdi/user.h>
+ 
+ extern int new_style_driver;
+ 
+-const char pppd_version[] = VERSION;
++const char pppd_version[] = PPPD_VERSION;
+ 
+-#define _PATH_DAHDI_OPT         _ROOT_PATH "/etc/ppp/options."
++#define _PATH_DAHDI_OPT         "/etc/ppp/options."
+ 
+ #define DAHDI_MTU	(DAHDI_DEFAULT_MTU_MRU - 16)
+ extern int kill_link;
+@@ -61,7 +63,7 @@ static option_t dahdi_options[] = {
+ 	{ "device name", o_wild, (void *) &setdevname_dahdi,
+ 	  "Serial port device name",
+ 	  OPT_DEVNAM | OPT_PRIVFIX | OPT_NOARG  | OPT_A2STRVAL | OPT_STATIC,
+-	  devnam},
++	  NULL},
+ 	{ NULL }
+ };
+ 
+@@ -74,16 +76,17 @@ static int connect_dahdi(void)
+     struct dahdi_params dahdi_params;
+     int res;
+     int x;
++    const char* ddevnam = ppp_devnam();
+ 
+-    info("DAHDI device is '%s'\n", devnam);
++    info("DAHDI device is '%s'\n", ddevnam);
+ 
+-    strlcpy(ppp_devnam, devnam, sizeof(ppp_devnam));
++    ppp_set_pppdevnam(ddevnam);
+ 
+-    if (strlen(devnam) && strcmp(devnam, "stdin")) {
++    if (strlen(ddevnam) && strcmp(ddevnam, "stdin")) {
+ 	/* Get the channel number */
+-	dahdi_chan = atoi(devnam);
++	dahdi_chan = atoi(ddevnam);
+ 	if (dahdi_chan < 1) {
+-		fatal("'%s' is not a valid device name\n", devnam);
++		fatal("'%s' is not a valid device name\n", ddevnam);
+ 		return -1;
+ 	}
+ 
+@@ -114,7 +117,7 @@ static int connect_dahdi(void)
+     res = ioctl(dahdi_fd, DAHDI_GET_PARAMS, &dahdi_params);
+ 
+     if (res) {
+-	fatal("Device '%s' does not appear to be a DAHDI device\n", devnam ? devnam : "<stdin>");
++	fatal("Device '%s' does not appear to be a DAHDI device\n", ddevnam ? ddevnam : "<stdin>");
+     }
+ 
+     x = 1;
+@@ -123,7 +126,7 @@ static int connect_dahdi(void)
+     res = ioctl(dahdi_fd, DAHDI_HDLCPPP, &x);
+ 
+     if (res) {
+-	fatal("Unable to put device '%s' into HDLC mode\n", devnam);
++	fatal("Unable to put device '%s' into HDLC mode\n", ddevnam);
+ 	close(dahdi_fd);
+ 	dahdi_fd = -1;
+ 	return -1;
+@@ -141,15 +144,16 @@ static void disconnect_dahdi(void)
+ {
+     int res;
+     int x = 0;
++    const char *ddevnam = ppp_devnam();
+     /* Throw out of HDLC mode */
+     res = ioctl(dahdi_fd, DAHDI_HDLCPPP, &x);
+ 
+     if (res) {
+-	warn("Unable to take device '%s' out of HDLC mode\n", devnam);
++	warn("Unable to take device '%s' out of HDLC mode\n", ddevnam);
+     }
+ 
+     /* Close if it's not stdin */
+-    if (strlen(devnam))
++    if (strlen(ddevnam))
+ 	close(dahdi_fd);
+     warn("Disconnect from DAHDI");
+ 
+@@ -165,8 +169,8 @@ static void dahdi_extra_options()
+ {
+     int ret;
+     char buf[256];
+-    snprintf(buf, 256, _PATH_DAHDI_OPT "%s",devnam);
+-    if(!options_from_file(buf, 0, 0, 1))
++    snprintf(buf, 256, _PATH_DAHDI_OPT "%s",ppp_devnam());
++    if(!ppp_options_from_file(buf, 0, 0, 1))
+ 	exit(EXIT_OPTION_ERROR);
+ 
+ }
+@@ -196,11 +200,6 @@ static void recv_config_dahdi(int mru,
+ 	error("Couldn't increase MRU to %d", mru);
+ }
+ 
+-static void set_xaccm_pppoe(int unit, ext_accm accm)
+-{
+-    /* NOTHING */
+-}
+-
+ 
+ 
+ struct channel dahdi_channel;
+@@ -218,9 +217,10 @@ int setdevname_dahdi(const char *cp)
+ {
+     int ret;
+     int chan;
++    const char *ddevnam = ppp_devnam();
+ 
+     /* If already set, forgoe */
+-    if (strlen(devnam))
++    if (strlen(ddevnam))
+ 	return 1;
+ 
+ 
+@@ -232,9 +232,9 @@ int setdevname_dahdi(const char *cp)
+ 	}
+     }
+ 
+-    dahdi_copy_string(devnam, cp, sizeof(devnam));
++    ppp_set_devnam(cp);
+ 
+-    info("Using DAHDI device '%s'\n", devnam);
++    info("Using DAHDI device '%s'\n", ppp_devnam());
+ 
+     ret = 1;
+ 
+@@ -242,7 +242,7 @@ int setdevname_dahdi(const char *cp)
+ 
+ 	the_channel = &dahdi_channel;
+ 
+-	modem = 0;
++	ppp_set_modem(false);
+ 
+ 	lcp_allowoptions[0].neg_accompression = 0;
+ 	lcp_wantoptions[0].neg_accompression = 0;
+@@ -270,9 +270,12 @@ int setdevname_dahdi(const char *cp)
+ 
+ void plugin_init(void)
+ {
+-    if (!ppp_available() && !new_style_driver)
++    static char def_devnam[256];
++    if (!ppp_check_kernel_support() && !new_style_driver)
+ 	fatal("Kernel doesn't support ppp_generic needed for DAHDI PPP");
+-    add_options(dahdi_options);
++    strlcpy(def_devnam, ppp_devnam(), 256);
++    dahdi_options[0].addr2 = def_devnam;
++    ppp_add_options(dahdi_options);
+ 
+     info("DAHDI Plugin Initialized");
+ }
+@@ -283,8 +286,8 @@ struct channel dahdi_channel = {
+     check_options: NULL,
+     connect: &connect_dahdi,
+     disconnect: &disconnect_dahdi,
+-    establish_ppp: &generic_establish_ppp,
+-    disestablish_ppp: &generic_disestablish_ppp,
++    establish_ppp: &ppp_generic_establish,
++    disestablish_ppp: &ppp_generic_disestablish,
+     send_config: &send_config_dahdi,
+     recv_config: &recv_config_dahdi,
+     close: NULL,

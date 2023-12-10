@@ -6,16 +6,16 @@
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	3.1.0
+Version:	3.3.0
 Release:	1
 License:	GPL v2
 Group:		Applications/System
 Source0:	http://downloads.asterisk.org/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	bc9f39264e5a862dde92f206c55d1162
+# Source0-md5:	237e35e7fc5def7d339b088656a7b983
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-includes.patch
-Patch1:		link.patch
+Patch1:		%{name}-pppd.patch
 URL:		http://www.asterisk.org/
 BuildRequires:	asciidoc
 BuildRequires:	autoconf >= 2.59
@@ -27,13 +27,13 @@ BuildRequires:	libusb-devel >= 1.0.9
 BuildRequires:	newt-devel
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
-%{?with_ppp:BuildRequires:	ppp-plugin-devel}
+%{?with_ppp:BuildRequires:	ppp-plugin-devel >= 3:2.5.0}
 BuildRequires:	rpm-perlprov >= 4.1-13
 BuildRequires:	rpmbuild(macros) >= 1.745
 Requires:	libusb >= 1.0.9
-Obsoletes:	dahdi-tools-utils
-Obsoletes:	zaptel
-Obsoletes:	zaptel-utils
+Obsoletes:	dahdi-tools-utils < 2.6.1
+Obsoletes:	zaptel < 2
+Obsoletes:	zaptel-utils < 2
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -48,7 +48,7 @@ Summary(pl.UTF-8):	Pliki nagłówkowe DAHDI
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 Requires:	dahdi-linux-devel
-Obsoletes:	zaptel-devel
+Obsoletes:	zaptel-devel < 2
 
 %description devel
 DAHDI development headers.
@@ -87,7 +87,7 @@ Group:		Applications/Communications
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
 Requires:	rc-scripts
-Obsoletes:	zaptel-init
+Obsoletes:	zaptel-init < 2
 
 %description init
 DAHDI boot-time initialization.
@@ -153,7 +153,7 @@ Perlowy interfejs do DAHDI.
 Summary:	DAHDI plugin for PPP daemon
 Summary(pl.UTF-8):	Wtyczka DAHDI dla demona PPP
 Group:		Libraries
-Requires:	ppp
+Requires:	ppp >= 3:2.5.0
 
 %description -n ppp-plugin-dahdi
 DAHDI plugin for PPP daemon.
