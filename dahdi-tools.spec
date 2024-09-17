@@ -6,21 +6,21 @@
 Summary:	DAHDI telephony device support
 Summary(pl.UTF-8):	Obsługa urządzeń telefonicznych DAHDI
 Name:		dahdi-tools
-Version:	3.3.0
+Version:	3.4.0
 Release:	1
 License:	GPL v2
 Group:		Applications/System
 Source0:	http://downloads.asterisk.org/pub/telephony/dahdi-tools/%{name}-%{version}.tar.gz
-# Source0-md5:	237e35e7fc5def7d339b088656a7b983
+# Source0-md5:	c2ca147fcf8b6160105fdfa8771e26ff
 Source1:	dahdi.init
 Source2:	dahdi.sysconfig
 Patch0:		%{name}-includes.patch
 Patch1:		%{name}-pppd.patch
-URL:		http://www.asterisk.org/
+URL:		https://www.asterisk.org/
 BuildRequires:	asciidoc
 BuildRequires:	autoconf >= 2.59
 BuildRequires:	automake
-BuildRequires:	dahdi-linux-devel >= 2.3.0
+BuildRequires:	dahdi-linux-devel >= 3.4.0
 BuildRequires:	libpcap-devel
 BuildRequires:	libtool
 BuildRequires:	libusb-devel >= 1.0.9
